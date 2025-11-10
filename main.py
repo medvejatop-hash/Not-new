@@ -1,8 +1,9 @@
 import os
 import telebot
 import google.generativeai as genai
+import http.server
+import socketserver
 import threading
-from flask import Flask
 
 # Получаем токены
 BOT_TOKEN = os.getenv('BOT_TOKEN')
@@ -27,20 +28,23 @@ def echo_all(message):
     except Exception as e:
         bot.reply_to(message, f"Ошибка: {str(e)}")
 
-# Простой веб-сервер для Render
-app = Flask(__name__)
+# Простой HTTP-сервер для Render
+class SimpleHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Bot is running!')
 
-@app.route('/')
-def home():
-    return "Bot is running!"
+def run_http_server():
+    with socketserver.TCPServer(("", 5000), SimpleHandler) as httpd:
+        print("HTTP сервер запущен на порту 5000")
+        httpd.serve_forever()
 
-def run_web():
-    app.run(host='0.0.0.0', port=5000, debug=False)
-
-# Запускаем веб-сервер в отдельном потоке
-web_thread = threading.Thread(target=run_web)
-web_thread.daemon = True
-web_thread.start()
+# Запускаем HTTP-сервер в отдельном потоке
+http_thread = threading.Thread(target=run_http_server)
+http_thread.daemon = True
+http_thread.start()
 
 print("🚀 Бот запущен!")
 bot.infinity_polling()
