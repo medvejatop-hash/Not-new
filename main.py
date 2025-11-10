@@ -22,6 +22,8 @@ def echo_all(message):
     except Exception as e:
         bot.reply_to(message, f"Ошибка: {str(e)}")
 
+# Вместо infinity_polling используем удаление webhook и запуск polling
 if __name__ == "__main__":
+    bot.remove_webhook()
     print("Бот запущен...")
     bot.infinity_polling()
